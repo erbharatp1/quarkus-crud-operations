@@ -1,16 +1,34 @@
 package org.quarkus.resource;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.quarkus.resource.entity.Employee;
+
+import java.util.List;
 
 @Path("/employees")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class EmployeeResource {
 
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
-        return "Hello from Quarkus REST";
+    public List<Employee> getAll() {
+        return Employee.listAll();
+    }
+
+    @POST
+    @Transactional
+    public Response create(Employee employee) {
+        employee.persist();
+        return Response.status(Response.Status.CREATED).entity(employee).build();
+    }
+
+    @GET
+    @Path("/{id}")
+    public Employee get(@PathParam("id") Long id) {
+        return Employee.findById(id);
     }
 }
